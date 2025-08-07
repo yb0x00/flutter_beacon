@@ -19,6 +19,7 @@ class _TabScanningState extends State<TabScanning> {
   @override
   void initState() {
     super.initState();
+    debugPrint('initState()');
 
     controller.startStream.listen((flag) {
       if (flag == true) {
@@ -31,10 +32,13 @@ class _TabScanningState extends State<TabScanning> {
         pauseScanBeacon();
       }
     });
+    debugPrint('initState() completed');
   }
 
   initScanBeacon() async {
+    debugPrint('initScanBeacon() called');
     await flutterBeacon.initializeScanning;
+    debugPrint('flutterBeacon.initializeScanning completed');
     if (!controller.authorizationStatusOk ||
         !controller.locationServiceEnabled ||
         !controller.bluetoothEnabled) {
@@ -44,6 +48,7 @@ class _TabScanningState extends State<TabScanning> {
           'bluetoothEnabled=${controller.bluetoothEnabled}');
       return;
     }
+    print('Starting beacon ranging...');
     final regions = <Region>[
       Region(
         identifier: 'Cubeacon',
@@ -51,7 +56,7 @@ class _TabScanningState extends State<TabScanning> {
       ),
       Region(
         identifier: 'BeaconType2',
-        proximityUUID: '6a84c716-0f2a-1ce9-f210-6a63bd873dd9',
+        proximityUUID: '6A84C716-0F2A-1CE9-F210-6A63BD873DD9',
       ),
     ];
 
@@ -61,10 +66,15 @@ class _TabScanningState extends State<TabScanning> {
         return;
       }
     }
-
     _streamRanging =
         flutterBeacon.ranging(regions).listen((RangingResult result) {
+      print('Received ranging result.');
+      //debugPrint('RangingResult received: ${result.region.identifier}');
       print(result);
+      for (final beacon in result.beacons) {
+        print(
+            '비콘 정보 - UUID: ${beacon.proximityUUID}, Major: ${beacon.major}, Minor: ${beacon.minor}, RSSI: ${beacon.rssi}');
+      }
       if (mounted) {
         setState(() {
           _regionBeacons[result.region] = result.beacons;
